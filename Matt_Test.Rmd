@@ -1,0 +1,31 @@
+---
+title: "Matt_Test"
+output: html_document
+---
+```{r}
+library(readr)
+library(dplyr)
+house_prices <- read_csv("data/train.csv") %>%
+  group_by(Neighborhood) %>%
+  summarise(MeanPrice= mean(SalePrice,na.rm = TRUE)/1000,
+            MinPrice = min(SalePrice, na.rm = TRUE)/1000,
+            MaxPrice = max(SalePrice, na.rm = TRUE)/1000,
+            SdPrice = sd(SalePrice, na.rm = TRUE)/1000) %>%
+  arrange(MeanPrice)
+
+library(knitr)
+kable((house_prices), caption = "Price by Neighborhood")
+
+library(ggplot2)
+library(dplyr)
+
+ggplot(house_prices, aes(x = Neighborhood, y = MeanPrice)) +
+  geom_bar(stat = "identity") +
+  geom_errorbar(aes(ymin = MeanPrice - SdPrice, ymax = MeanPrice + SdPrice), width = 0.2) +
+  labs(title = "Average Sale Price by Neighborhood",
+       x = "Neighborhood",
+       y = "Average Sale Price / x10^3") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90))
+```
+
