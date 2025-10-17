@@ -1,0 +1,29 @@
+---
+title: "Untitled"
+author: "eamon"
+date: "2025-10-17"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(readr)
+house_prices <- read_csv("data/train.csv")
+
+house_prices
+
+summary(house_prices)
+
+```
+
+## R Markdown
+
+
+```{r cars}
+```
+
+## Including Plots
+
+
+```{r pressure, echo=FALSE}
+```
+
