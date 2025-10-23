@@ -29,6 +29,7 @@ ggplot(house_prices, aes(x = Neighborhood, y = MeanPrice)) +
   theme(axis.text.x = element_text(angle = 90))
 ```
 
+<<<<<<< HEAD
 ```{r}
 library(readr)
 library(dplyr)
@@ -126,3 +127,5 @@ ggplot(house_prices, aes(x = MoSold, y = MeanPrice)) +
   theme(axis.text.x = element_text(angle = 90))
 ```
 
+=======
+>>>>>>> 956570ea433e16b6c7ae326b8f3f60c2478eb763
