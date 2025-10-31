@@ -8,6 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 library(readr)
 library(tidyverse)
+library(ggplot2)
 house_prices <- read_csv("data/train.csv")
 
 summary(house_prices)
@@ -26,6 +27,13 @@ house_prices_sel <- house_prices %>%
            FullBath) %>% 
   select(Id,GarageType,BedroomAbvGr,TotalBath, BldgType, LotArea, Neighborhood, KitchenQual,PavedDrive, PoolArea, HeatingQC, TotalBsmtSF, Electrical, OverallQual,ExterQual, YearBuilt, SalePrice) %>% 
   arrange(SalePrice)
+
+
+# Distribution of SalePrice
+ggplot(house_prices_sel, aes(x = SalePrice)) +
+  geom_histogram(bins = 30, fill = "skyblue", color = "black") +
+  labs(title = "Distribution of House Prices")
+
 ```
 
 
