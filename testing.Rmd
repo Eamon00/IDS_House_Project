@@ -7,21 +7,25 @@ output: html_document
 
 ```{r setup, include=FALSE}
 library(readr)
+library(tidyverse)
 house_prices <- read_csv("data/train.csv")
-
-house_prices
 
 summary(house_prices)
 
 ```
 
-## R Markdown
+## R Markdown.
 
 ## Including Plots
 
 ```{r}
-library(readr)
-library(tidyverse)
+house_prices_sel <- house_prices %>% 
+  mutate(TotalBath = BsmtFullBath + 
+           BsmtHalfBath + 
+           HalfBath + 
+           FullBath) %>% 
+  select(Id,GarageType,BedroomAbvGr,TotalBath, BldgType, LotArea, Neighborhood, KitchenQual,PavedDrive, PoolArea, HeatingQC, TotalBsmtSF, Electrical, OverallQual,ExterQual, YearBuilt, SalePrice) %>% 
+  arrange(SalePrice)
 ```
 
 
@@ -30,11 +34,8 @@ library(tidyverse)
 
 
 
-```{r}
-library(readr)
-house_prices <- read_csv("data/train.csv")
-View(house_prices)
-```
+
+
 
 
 
