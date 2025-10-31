@@ -127,5 +127,32 @@ ggplot(house_prices, aes(x = MoSold, y = MeanPrice)) +
   theme(axis.text.x = element_text(angle = 90))
 ```
 
+```{r}
+library(readr)
+library(dplyr)
+house_prices <- read_csv("data/train.csv") %>%
+  mutate(KitchenQual = recode(KitchenQual, "Ex"= 1, "Gd"= 2, "Ta" = 3)) %>%
+  group_by(KitchenQual) %>%
+  summarise(MeanPrice= mean(SalePrice,na.rm = TRUE),
+            count = n())
+
+ggplot(house_prices, aes(x = KitchenQual, y = MeanPrice)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Average Sale Price by Kitchen Quality",
+       x = "Kitchen Quaity",
+       y = "Average Sale Price") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90))
+```
+
+```{r}
+library(readr)
+library(dplyr)
+
+house_prices_filtered <- read_csv("data/train.csv") 
+
+house_prices_filtered <- select(house_prices_filtered, GarageType, BedroomAbvGr, HalfBath, FullBath, BsmtHalfBath, BsmtFullBath, BldgType, LotArea, Neighborhood, KitchenQual, PavedDrive, PoolArea, HeatingQC, TotalBsmtSF, Electrical, OverallQual, ExterQual, YearBuilt, Id, SalePrice)
+```
+
 =======
 >>>>>>> 956570ea433e16b6c7ae326b8f3f60c2478eb763
