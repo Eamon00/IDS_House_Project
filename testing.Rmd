@@ -17,13 +17,25 @@ summary(house_prices)
 
 ## R Markdown
 
-
-```{r cars}
-```
-
 ## Including Plots
 
-
-```{r pressure, echo=FALSE}
+```{r}
+library(readr)
+library(tidyverse)
 ```
+
+
+
+
+
+
+
+```{r}
+library(readr)
+house_prices <- read_csv("data/train.csv")
+View(house_prices)
+```
+
+
+
 
