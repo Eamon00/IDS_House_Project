@@ -34,6 +34,18 @@ ggplot(house_prices_sel, aes(x = SalePrice)) +
   geom_histogram(bins = 30, fill = "skyblue", color = "black") +
   labs(title = "Distribution of House Prices")
 
+library(corrplot)
+
+# Select numeric columns
+num_df <- house_prices_sel %>% select(where(is.numeric))
+
+# Compute correlation
+corr <- cor(num_df, use = "complete.obs")
+
+# Plot correlation matrix
+corrplot(corr, method = "color", type = "upper", tl.cex = 0.8)
+
+
 ```
 ```{r}
 # Cleaning Data
@@ -44,9 +56,11 @@ qual_map <- c("Ex" = 5,
               "Fa" = 2,
               "Po" = 1)
 
+
 # Apply mapping
 house_prices_sel$KitchenQual <- qual_map[house_prices_sel$KitchenQual]
 house_prices_sel$ExterQual <- qual_map[house_prices_sel$ExterQual]
+house_prices_sel$HeatingQC <- qual_map[house_prices_sel$HeatingQC]
 house_prices_sel$HeatingQC <- qual_map[house_prices_sel$HeatingQC]
 
 
@@ -57,6 +71,31 @@ house_prices_sel$HeatingQC <- qual_map[house_prices_sel$HeatingQC]
 
 
 ```
+```{r}
+# Load ggplot2
+library(ggplot2)
+
+# Fit linear regression
+model_lm <- lm(SalePrice ~ ., data = house_prices_sel)
+
+# Predict
+pred <- predict(model_lm, newdata = house_prices_sel)
+
+# Create a data frame for plotting
+plot_data <- data.frame(
+  Actual = house_prices_sel$SalePrice,
+  Predicted = pred
+)
+
+# Scatter plot of Actual vs Predicted
+ggplot(plot_data, aes(x = Actual, y = Predicted)) +
+  geom_point(color = "blue", alpha = 0.6) +   # points
+  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") + # perfect prediction line
+  labs(title = "Predicted vs Actual SalePrice",
+       x = "Actual SalePrice",
+       y = "Predicted SalePrice") +
+  theme_minimal()
 
 
 
+```
