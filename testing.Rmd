@@ -35,16 +35,26 @@ ggplot(house_prices_sel, aes(x = SalePrice)) +
   labs(title = "Distribution of House Prices")
 
 ```
+```{r}
+# Cleaning Data
+
+qual_map <- c("Ex" = 5,
+              "Gd" = 4,
+              "TA" = 3,
+              "Fa" = 2,
+              "Po" = 1)
+
+# Apply mapping
+house_prices_sel$KitchenQual <- qual_map[house_prices_sel$KitchenQual]
+
+# Check result
+head(house_prices_sel$KitchenQual)
 
 
 
 
 
-
-
-
-
-
+```
 
 
 
