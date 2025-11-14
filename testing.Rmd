@@ -46,9 +46,11 @@ qual_map <- c("Ex" = 5,
 
 # Apply mapping
 house_prices_sel$KitchenQual <- qual_map[house_prices_sel$KitchenQual]
+house_prices_sel$ExterQual <- qual_map[house_prices_sel$ExterQual]
+house_prices_sel$HeatingQC <- qual_map[house_prices_sel$HeatingQC]
 
-# Check result
-head(house_prices_sel$KitchenQual)
+
+
 
 
 
