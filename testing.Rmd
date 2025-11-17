@@ -15,6 +15,14 @@ summary(house_prices)
 
 ```
 
+# Cleaning that has been done so far.
+## • TotalBath = combination of all baths.
+## • Kitchen Qual = changed to numerical values.
+## • Extr Qual // 5
+## • Pool area: if N/A -> 0
+## • Paved drive -> changed to yes = 1
+
+
 ## R Markdown.
 
 ## Including Plots
