@@ -15,7 +15,7 @@ summary(house_prices)
 
 ```
 
-# Cleaning that has been done so far.
+# Cleaning done so far:
 ## • TotalBath = combination of all baths.
 ## • Kitchen Qual = changed to numerical values.
 ## • Extr Qual // 5

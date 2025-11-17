@@ -1,0 +1,121 @@
+---
+title: "81_to_17"
+output: html_document
+---
+
+```{r}
+
+
+# Loading librarys
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(corrplot)
+
+# Read data
+house_prices <- read_csv("data/train.csv")
+
+#Cleaned data (Same as projecy)
+house_prices_filtered <- house_prices %>% 
+  mutate(TotalBath = BsmtFullBath + 
+           BsmtHalfBath + 
+           HalfBath + 
+           FullBath)
+
+
+qual_map <- c("Ex" = 5,
+              "Gd" = 4,
+              "TA" = 3,
+              "Fa" = 2,
+              "Po" = 1)
+
+pave_map <- c("Y" = 2,
+              "N"= 0,
+              "P"= 1)
+
+electric_map <- c("SBrkr" = 5,
+                  "FuseA" = 4,
+                  "FuseF" = 3,
+                  "FuseP" = 2,
+                  "Mix" = 1)
+
+building_map <- c("1Fam"   = 5,
+                  "TwnhsE" = 4,
+                  "Twnhs"  = 3,
+                  "Duplex" = 2,
+                  "2fmCon" = 1,
+                  "Other"  = 0)
+
+
+# Apply mapping
+house_prices_filtered$KitchenQual <- qual_map[house_prices_filtered$KitchenQual]
+house_prices_filtered$ExterQual <- qual_map[house_prices_filtered$ExterQual]
+house_prices_filtered$HeatingQC <- qual_map[house_prices_filtered$HeatingQC]
+house_prices_filtered$HeatingQC <- qual_map[house_prices_filtered$HeatingQC]
+house_prices_filtered$PavedDrive <- pave_map[house_prices_filtered$PavedDrive]
+house_prices_filtered$Electrical <- electric_map[house_prices_filtered$Electrical]
+house_prices_filtered$BldgType <- building_map[house_prices_filtered$BldgType]
+
+
+
+# Creating Heatmap
+
+##Holding only numeric
+numeric_vars <- house_prices_filtered[, sapply(house_prices_filtered, is.numeric)]
+
+
+#Plot heatmap using Corr package
+price_corr <- cor(numeric_vars, use = "complete.obs")[, "SalePrice"]
+
+price_corr_df <- data.frame(
+  variable = names(price_corr),
+  correlation = as.numeric(price_corr)
+) %>%
+  arrange(desc(correlation)) 
+
+
+
+#Nice little graph
+library(ggplot2)
+
+ggplot(price_corr_df, aes(x = reorder(variable, correlation), y = correlation)) +
+  geom_col(fill = "steelblue") + 
+  coord_flip() +                   
+  theme_minimal() +                
+  labs(
+    title = "Variables Positively Correlated with Price",
+    x = "Variable",
+    y = "Correlation"
+  )
+
+#Filtered for > something
+
+Price_corr_filtered <- price_corr_df %>%
+  filter(correlation > 0.15) 
+
+#Nice little graph
+library(ggplot2)
+
+ggplot(Price_corr_filtered, aes(x = reorder(variable, correlation), y = correlation)) +
+  geom_col(fill = "steelblue") + 
+  coord_flip() +                   
+  theme_minimal() +                
+  labs(
+    title = "Variables Positively Correlated with Price",
+    x = "Variable",
+    y = "Correlation"
+  )
+```
+#Nice little graph
+library(ggplot2)
+
+ggplot(price_corr_df, aes(x = reorder(variable, correlation), y = correlation)) +
+  geom_col(fill = "steelblue") + 
+  coord_flip() +                   
+  theme_minimal() +                
+  labs(
+    title = "Variables Positively Correlated with Price",
+    x = "Variable",
+    y = "Correlation"
+  )
+

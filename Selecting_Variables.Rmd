@@ -1,0 +1,50 @@
+---
+title: "Selecting_Variables"
+output: html_document
+---
+
+```{r}
+library(readr)
+library(dplyr)
+
+house_prices <- read_csv("data/train.csv")
+
+selected_var <- house_prices %>% 
+  mutate(TotalBath = BsmtFullBath + 
+           BsmtHalfBath + 
+           HalfBath + 
+           FullBath) %>% 
+  select(Id,GarageCars,BedroomAbvGr,TotalBath, BldgType, LotArea, Neighborhood, KitchenQual,PavedDrive, TotalBsmtSF, Electrical, OverallQual,ExterQual, YearBuilt, GrLivArea, TotRmsAbvGrd, SalePrice)
+
+
+# Numeric maps (Higher # = better)
+
+qual_map <- c("Ex" = 5,
+              "Gd" = 4,
+              "TA" = 3,
+              "Fa" = 2,
+              "Po" = 1)
+
+electric_map <- c("SBrkr" = 5,
+                  "FuseA" = 4,
+                  "FuseF" = 3,
+                  "FuseP" = 2,
+                  "Mix" = 1)
+
+building_map <- c("1Fam"   = 5,
+                  "TwnhsE" = 4,
+                  "Twnhs"  = 3,
+                  "Duplex" = 2,
+                  "2fmCon" = 1,
+                  "Other"  = 0)
+
+
+# Apply mapping
+selected_numeric <- selected_var
+selected_numeric$KitchenQual <- qual_map[selected_var$KitchenQual]
+selected_numeric$ExterQual <- qual_map[selected_var$ExterQual]
+selected_numeric$Electrical <- electric_map[selected_var$Electrical]
+selected_numeric$BldgType <- building_map[selected_var$BldgType]
+
+```
+
