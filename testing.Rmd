@@ -107,3 +107,104 @@ ggplot(plot_data, aes(x = Actual, y = Predicted)) +
 
 
 ```
+```{r}
+
+
+library(ggplot2)
+library(dplyr)
+library(purrr)
+library(tidyr)
+
+
+# Remove Id column from predictors
+house_data <- selected_var %>% select(-Id)
+
+# Identify predictor names
+all_predictors <- setdiff(names(house_data), "SalePrice")
+
+length(all_predictors)  # should show 15 predictors
+
+# Generate all 12-column combinations
+predictor_sets <- combn(all_predictors, 12, simplify = FALSE)
+
+results <- list()
+plot_list <- list()
+
+for (i in seq_along(predictor_sets)) {
+  
+  preds <- predictor_sets[[i]]
+  
+  # Build formula
+  form <- as.formula(
+    paste("SalePrice ~", paste(preds, collapse = " + "))
+  )
+  
+  model <- lm(form, data = house_data)
+  pred <- predict(model, newdata = house_data)
+  r2 <- summary(model)$r.squared
+  
+  # Save results
+  results[[i]] <- list(
+    predictors = preds,
+    r2 = r2,
+    model = model
+  )
+  
+  # Residual plot
+  resid_plot <- ggplot(
+    data.frame(Residuals = model$residuals, Fitted = model$fitted.values),
+    aes(x = Fitted, y = Residuals)
+  ) +
+    geom_point(alpha = 0.6) +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+    labs(
+      title = paste("Residual Plot for Model", i),
+      subtitle = paste("Predictors:", paste(preds, collapse = ", ")),
+      x = "Fitted Values",
+      y = "Residuals"
+    ) +
+    theme_minimal()
+  
+  plot_list[[i]] <- resid_plot
+  
+  # Print progress
+  message("Completed model ", i, " / ", length(predictor_sets), "   R2 = ", round(r2, 4))
+}
+
+# Find the best model
+best_index <- which.max(map_dbl(results, "r2"))
+best_model_info <- results[[best_index]]
+
+cat("Best model is model", best_index, "\n")
+cat("R² =", best_model_info$r2, "\n")
+cat("Predictors used:\n")
+print(best_model_info$predictors)
+
+# Display the residual plot for the best model
+plot_list[[best_index]]
+
+# Use the best model to generate final predictions
+
+final_model <- best_model_info$model
+
+final_predictions <- predict(final_model, newdata = house_data)
+
+output_df <- data.frame(
+  Id = house_prices_filtered$Id,
+  Actual_SalePrice = house_prices_sel$SalePrice,
+  Predicted_SalePrice = final_predictions
+)
+
+# Save to CSV
+write.csv(output_df, "final_predictions.csv", row.names = FALSE)
+
+cat("Final predictions saved to final_predictions.csv\n")
+
+
+
+
+
+
+```
+
+
