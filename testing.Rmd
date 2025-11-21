@@ -134,12 +134,8 @@ library(tidyr)
 # Remove Id column from predictors
 house_data <- selected_var %>% select(-Id)
 
-# Identify predictor names
 all_predictors <- setdiff(names(house_data), "SalePrice")
 
-length(all_predictors)  # should show 15 predictors
-
-# Generate all 12-column combinations
 predictor_sets <- combn(all_predictors, 12, simplify = FALSE)
 
 results <- list()
@@ -198,9 +194,34 @@ print(best_model_info$predictors)
 # Display the residual plot for the best model
 plot_list[[best_index]]
 
-# Use the best model to generate final predictions
+# Best model predictions
+best_model <- best_model_info$model
+best_predictions <- predict(best_model, newdata = house_data)
 
-final_model <- best_model_info$model
+mae <- mean(abs(house_data$SalePrice - best_predictions))
+cat("MAE =", round(mae, 4), "\n")
+
+pred_vs_actual_plot <- ggplot(
+  data.frame(
+    Actual = house_data$SalePrice,
+    Predicted = best_predictions
+  ),
+  aes(x = Actual, y = Predicted)
+) +
+  geom_point(alpha = 0.6) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed") +
+  labs(
+    title = paste("Predicted vs Actual SalePrice (Best Model:", best_index, ")"),
+    subtitle = paste("R² =", round(best_model_info$r2, 4), "   |   MAE =", round(mae, 2)),
+    x = "Actual SalePrice",
+    y = "Predicted SalePrice"
+  ) +
+  theme_minimal()
+
+print(pred_vs_actual_plot)
+
+# Use the best model to generate final predictions
+final_model <- best_model
 
 final_predictions <- predict(final_model, newdata = house_data)
 
@@ -214,6 +235,8 @@ output_df <- data.frame(
 write.csv(output_df, "final_predictions.csv", row.names = FALSE)
 
 cat("Final predictions saved to final_predictions.csv\n")
+
+
 
 
 
