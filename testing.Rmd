@@ -108,6 +108,21 @@ ggplot(plot_data, aes(x = Actual, y = Predicted)) +
 
 ```
 ```{r}
+library(readr)
+library(dplyr)
+
+house_prices <- read_csv("data/train.csv")
+
+selected_var <- house_prices %>% 
+  mutate(TotalBath = BsmtFullBath + 
+           BsmtHalfBath + 
+           HalfBath + 
+           FullBath) %>% 
+  select(Id,GarageCars,BedroomAbvGr,TotalBath, BldgType, LotArea, Neighborhood, KitchenQual,PavedDrive, TotalBsmtSF, Electrical, OverallQual,ExterQual, YearBuilt, GrLivArea, TotRmsAbvGrd, SalePrice)
+```
+
+
+```{r}
 
 
 library(ggplot2)
