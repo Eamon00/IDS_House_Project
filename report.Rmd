@@ -70,13 +70,29 @@ You can also load your data here and present any analysis results / plots.
 Make sure to hide your code with  `echo = FALSE` unless the point you are trying to make is about the code itself, in which case you should show your code.
 
 
-# INTRODUCTION
+INTRODUCTION:
 
-We’ve decided to investigate how accurately we can predict house prices using a range of explanatory variables from the Ames Housing dataset. Compiled by Dean De Cock, this dataset contains detailed information on individual residential properties sold in Ames, Iowa between 2006 and 2010. Our aim was to explore which features—such as structural characteristics, location factors, and property condition—carry the most predictive power, and to assess how well different modelling approaches can estimate a home’s final sale price. By analysing these variables and building predictive models, we hoped to understand not only how accurately property values can be forecasted, but also which aspects of a home contribute most strongly to its market value.
+We set out to investigate how accurately house prices can be predicted using a range of explanatory variables from the Ames Housing dataset. Compiled by Dean De Cock, this dataset provides detailed information on residential properties sold in Ames, Iowa between 2006 and 2010. Our goal was to explore which features—such as structural characteristics, location factors, and indicators of property condition—carry the most predictive power, and to evaluate how effectively different modelling approaches can estimate a home’s final sale price. By analysing these variables and building predictive models, we aimed to determine not only the achievable accuracy of house price predictions, but also which aspects of a home contribute most strongly to its market value.
 
-# DATA CLEANING AND PREPROCESSING
+METHODS:
 
-The first bit of data cleaning we did was changing the TotalBath variable to a combination of all the bath related variables. This includes BsmtHalfBath, BsmtFullBath, HalfBath and FullBath. We combined these to show the total number of bathrooms each house has as this was more convenient for showing how it affects the house price. We also changed KitchenQual so the values were all numerical instead of just being words describing the quality. We made it so the values were a numerical scale of how good or bad the quality of the house is, 5 being the best and 1 being the worst. We did this because we found a scale was better for describing the quality and easier to read, we also found this more convenient when using functions. Much like KitchenQual, changed ExtrQual to a scale  of numbers instead of having it all as words describing this quality. This was done using qual_map as both KitchenQual and ExtrQual used the exact same words and number of words as its values. Any N/A values for houses for the pool area variable were instead changed to 0 to show the house has no pool instead of just giving an N/A value. We did this because N/A values can make a lot of functions a lot harder to use. It can also cause these functions to give weird results.
+Data Cleaning & Preprocessing
+
+Our first step in data cleaning was to create a more useful representation of bathroom-related variables. Instead of working with separate fields—BsmtHalfBath, BsmtFullBath, HalfBath, and FullBath—we combined them into a single variable, TotalBath, representing the total number of bathrooms in each house. This made comparisons across properties more intuitive and improved the convenience of downstream analysis.
+
+We also transformed the KitchenQual variable from categorical descriptions of quality into a numerical rating scale from 1 to 5, where 5 represents the highest quality and 1 the lowest. This conversion made the variable easier to interpret and more convenient to use in modelling functions. We applied the same approach to ExterQual, using the same qual_map transformation because both variables used identical categorical descriptors.
+
+In addition, all NA values in the PoolArea variable were converted to 0. Rather than implying missing data, NA in this context simply indicates that the house does not have a pool. Treating these as zeros prevented the presence of missing values from complicating numeric functions or producing unexpected results during analysis.
+
+Data Analysis
+
+To familiarise ourselves with the dataset, we began by producing several exploratory graphs. For example, we plotted the distribution of sale prices to ensure there was sufficient variation to support meaningful prediction.
+
+Because the original dataset contained over 80 variables, we then aimed to reduce dimensionality and avoid unnecessary noise. Initially, we selected variables based on intuition and visual inspection—choosing features we believed would be strongly correlated with sale price. However, we quickly realised that a more systematic approach would be more efficient. We generated a correlation heatmap for all numerical variables and identified the 17 features with the highest correlations to the target variable. These variables formed the basis for our subsequent modelling work.
+
+
+
+
 
 # DATA ANALYSIS
 
