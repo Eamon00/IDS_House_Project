@@ -71,6 +71,8 @@ Make sure to hide your code with  `echo = FALSE` unless the point you are trying
 
 # DATA CLEANING AND PREPROCESSING
 
+The first bit of data cleaning we did was changing the TotalBath variable to a combination of all the bath related variables. This includes BsmtHalfBath, BsmtFullBath, HalfBath and FullBath. We combined these to show the total number of bathrooms each house has as this was more convenient for showing how it affects the house price. We also changed KitchenQual so the values were all numerical instead of just being words describing the quality. We made it so the values were a numerical scale of how good or bad the quality of the house is, 5 being the best and 1 being the worst. We did this because we found a scale was better for describing the quality and easier to read, we also found this more convenient when using functions. Much like KitchenQual, changed ExtrQual to a scale  of numbers instead of having it all as words describing this quality. This was done using qual_map as both KitchenQual and ExtrQual used the exact same words and number of words as its values. Any N/A values for houses for the pool area variable were instead changed to 0 to show the house has no pool instead of just giving an N/A value. We did this because N/A values can make a lot of functions a lot harder to use. It can also cause these functions to give weird results.
+
 # DATA ANALYSIS
 
 # INITIAL FINDINGS (including graphs)
