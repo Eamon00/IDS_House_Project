@@ -22,25 +22,9 @@ library(purrr)
 
 
 ```{r load-data, include=FALSE}
-library(readr)
-library(ggplot2)
-train <- read_csv("data/train.csv")
 
-data_important <- test[ , c(1, 3)]
-head(data_important)
-
-head(house_prices_sel)
-
-# Loading librarys
-library(readr)
-library(dplyr)
-library(ggplot2)
-library(corrplot)
-
-# Read data
 house_prices <- read_csv("data/train.csv")
 
-#Cleaned data (Same as projecy)
 house_prices_filtered <- house_prices %>% 
   mutate(TotalBath = BsmtFullBath + 
            BsmtHalfBath + 
@@ -81,15 +65,8 @@ house_prices_filtered$PavedDrive <- pave_map[house_prices_filtered$PavedDrive]
 house_prices_filtered$Electrical <- electric_map[house_prices_filtered$Electrical]
 house_prices_filtered$BldgType <- building_map[house_prices_filtered$BldgType]
 
-
-
-# Creating Heatmap
-
-##Holding only numeric
 numeric_vars <- house_prices_filtered[, sapply(house_prices_filtered, is.numeric)]
 
-
-#Plot heatmap using Corr package
 price_corr <- cor(numeric_vars, use = "complete.obs")[, "SalePrice"]
 
 price_corr_df <- data.frame(
@@ -98,38 +75,19 @@ price_corr_df <- data.frame(
 ) %>%
   arrange(desc(correlation)) 
 
-
-
-#Nice little graph
-library(ggplot2)
-
-ggplot(price_corr_df, aes(x = reorder(variable, correlation), y = correlation)) +
-  geom_col(fill = "steelblue") + 
-  coord_flip() +                   
-  theme_minimal() +                
-  labs(
-    title = "Variables Positively Correlated with Price",
-    x = "Variable",
-    y = "Correlation"
-  )
-
-#Filtered for > something
-
 Price_corr_filtered <- price_corr_df %>%
   filter(correlation > 0.15) 
 
-#Nice little graph
-library(ggplot2)
-
-ggplot(Price_corr_filtered, aes(x = reorder(variable, correlation), y = correlation)) +
-  geom_col(fill = "steelblue") + 
-  coord_flip() +                   
-  theme_minimal() +                
-  labs(
-    title = "Variables Positively Correlated with Price",
-    x = "Variable",
-    y = "Correlation"
+theme_house <- theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 15),
+    axis.title = element_text(face = "bold"),
+    panel.grid.minor = element_blank(),
+    plot.background = element_rect(fill = "white", colour = NA)
   )
+
+main_colour <- "#3B82F6"   # A consistent modern blue
+accent_colour <- "#1E40AF" # Darker shade for borders/text
 ```
 
 
@@ -156,14 +114,33 @@ In addition, all NA values in the PoolArea variable were converted to 0. Rather 
 
 To familiarise ourselves with the dataset, we began by producing several exploratory graphs. For example, we plotted the distribution of sale prices to ensure there was sufficient variation to support meaningful prediction.
 
-```{r}
-ggplot(house_prices_sel, aes(x = SalePrice)) +
-  geom_histogram(bins = 30, fill = "skyblue", color = "black") +
-  labs(title = "Distribution of House Prices")
+```{r, echo=FALSE}
+ggplot(house_prices_filtered, aes(x = SalePrice)) +
+  geom_histogram(
+    bins = 30,
+    fill = main_colour,
+    color = accent_colour
+  ) +
+  labs(title = "Distribution of House Prices",
+       x = "Sale Price",
+       y = "Count") +
+  theme_house
 ```
 
-
 Because the original dataset contained over 80 variables, we then aimed to reduce dimensionality and avoid unnecessary noise. Initially, we selected variables based on intuition and visual inspection—choosing features we believed would be strongly correlated with sale price. However, we quickly realised that a more systematic approach would be more efficient. We generated a correlation heatmap for all numerical variables and identified the 17 features with the highest correlations to the target variable. These variables formed the basis for our subsequent modelling work.
+
+```{r, echo=FALSE}
+ggplot(Price_corr_filtered,
+       aes(x = reorder(variable, correlation), y = correlation)) +
+  geom_col(fill = main_colour, color = accent_colour) +
+  coord_flip() +
+  labs(
+    title = "Variables Positively Correlated with Price",
+    x = "Variable",
+    y = "Correlation"
+  ) +
+  theme_house
+```
 
 
 
