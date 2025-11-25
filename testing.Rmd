@@ -26,37 +26,22 @@ summary(house_prices)
 ## R Markdown.
 
 ## Including Plots
-
 ```{r}
-house_prices_sel <- house_prices %>% 
+library(readr)
+library(dplyr)
+
+#CLEANING
+
+house_prices <- read_csv("data/train.csv")
+
+selected_var <- house_prices %>% 
   mutate(TotalBath = BsmtFullBath + 
            BsmtHalfBath + 
            HalfBath + 
            FullBath) %>% 
-  select(Id,GarageType,BedroomAbvGr,TotalBath, BldgType, LotArea, Neighborhood, KitchenQual,PavedDrive, PoolArea, HeatingQC, TotalBsmtSF, Electrical, OverallQual,ExterQual, YearBuilt, SalePrice) %>% 
-  arrange(SalePrice)
+  select(Id,GarageCars,BedroomAbvGr,TotalBath, BldgType, LotArea, Neighborhood, KitchenQual,PavedDrive, TotalBsmtSF, Electrical, OverallQual,ExterQual, YearBuilt, GrLivArea, TotRmsAbvGrd, SalePrice)
 
-
-# Distribution of SalePrice
-ggplot(house_prices_sel, aes(x = SalePrice)) +
-  geom_histogram(bins = 30, fill = "skyblue", color = "black") +
-  labs(title = "Distribution of House Prices")
-
-library(corrplot)
-
-# Select numeric columns
-num_df <- house_prices_sel %>% select(where(is.numeric))
-
-# Compute correlation
-corr <- cor(num_df, use = "complete.obs")
-
-# Plot correlation matrix
-corrplot(corr, method = "color", type = "upper", tl.cex = 0.8)
-
-
-```
-```{r}
-# Cleaning Data
+# Numeric maps (Higher # = better)
 
 qual_map <- c("Ex" = 5,
               "Gd" = 4,
@@ -64,34 +49,41 @@ qual_map <- c("Ex" = 5,
               "Fa" = 2,
               "Po" = 1)
 
+# Apply mapping
+selected_var <- selected_var
+selected_var$KitchenQual <- qual_map[selected_var$KitchenQual]
+selected_var$ExterQual <- qual_map[selected_var$ExterQual]
+
+qual_map <- c("Ex" = 5,
+              "Gd" = 4,
+              "TA" = 3,
+              "Fa" = 2,
+              "Po" = 1)
 
 # Apply mapping
-house_prices_sel$KitchenQual <- qual_map[house_prices_sel$KitchenQual]
-house_prices_sel$ExterQual <- qual_map[house_prices_sel$ExterQual]
-house_prices_sel$HeatingQC <- qual_map[house_prices_sel$HeatingQC]
-house_prices_sel$HeatingQC <- qual_map[house_prices_sel$HeatingQC]
+selected_var$KitchenQual <- qual_map[house_prices_sel$KitchenQual]
+selected_var$ExterQual <- qual_map[house_prices_sel$ExterQual]
+selected_var$HeatingQC <- qual_map[house_prices_sel$HeatingQC]
+selected_var$HeatingQC <- qual_map[house_prices_sel$HeatingQC]
 
-
-
-
-
-
-
-
+selected_var <- selected_var %>%
+  mutate(PavedDrive = if_else(PavedDrive == "Y", 1, 0))
 ```
+
+
 ```{r}
 # Load ggplot2
 library(ggplot2)
 
 # Fit linear regression
-model_lm <- lm(SalePrice ~ ., data = house_prices_sel)
+model_lm <- lm(SalePrice ~ ., data = selected_var)
 
 # Predict
-pred <- predict(model_lm, newdata = house_prices_sel)
+pred <- predict(model_lm, newdata = selected_var)
 
 # Create a data frame for plotting
 plot_data <- data.frame(
-  Actual = house_prices_sel$SalePrice,
+  Actual = selected_var$SalePrice,
   Predicted = pred
 )
 
@@ -242,6 +234,18 @@ cat("Final predictions saved to final_predictions.csv\n")
 
 
 
+
+```
+```{r}
+ggplot(house_prices, aes(x = OverallCond, y = SalePrice)) +
+  geom_point(color = "steelblue", alpha = 0.6) +  # Scatter points
+  geom_smooth(method = "lm", se = TRUE, color = "darkred") +  # Linear regression line
+  labs(
+    title = "Sale Price vs Overall Condition",
+    x = "Overall Condition",
+    y = "Sale Price"
+  ) +
+  theme_minimal()
 
 ```
 

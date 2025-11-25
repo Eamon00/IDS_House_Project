@@ -1,0 +1,109 @@
+---
+title: "seperate"
+output: html_document
+---
+
+```{r}
+
+library(readr)
+library(dplyr)
+
+house_prices <- read_csv("data/train.csv")
+
+seperate <- house_prices %>% 
+  mutate(TotalBath = BsmtFullBath + 
+           BsmtHalfBath + 
+           HalfBath + 
+           FullBath) %>% 
+  select(Id,GarageCars,BedroomAbvGr,TotalBath, BldgType, LotArea, Neighborhood, KitchenQual,TotalBsmtSF,OverallQual,ExterQual, YearBuilt,GrLivArea, SalePrice)
+
+seperate$BldgType     <- as.factor(seperate$BldgType)
+seperate$Neighborhood <- as.factor(seperate$Neighborhood)
+seperate$KitchenQual  <- as.factor(seperate$KitchenQual)
+
+model <- lm(
+  SalePrice ~ GarageCars + BedroomAbvGr + TotalBath +
+              LotArea + BldgType + Neighborhood + KitchenQual + TotalBsmtSF + OverallQual + ExterQual + YearBuilt + GrLivArea,
+  data = seperate
+)
+
+seperate$PredictedPrice <- predict(model, newdata = seperate)
+
+library(ggplot2)
+
+ggplot(seperate, aes(PredictedPrice, SalePrice)) +
+  geom_point(alpha = 0.6) +
+  geom_abline(color = "red", linetype = "dashed") +
+  labs(
+    title = "Actual vs Predicted Sale Price",
+    x = "Predicted (from all variables)",
+    y = "Actual SalePrice"
+  ) +
+  theme_minimal()
+
+seperate <- seperate %>%
+  mutate(
+    SalePrice = SalePrice, 
+    PredictedPrice = PredictedPrice,
+    Residuals = residuals(model)
+)
+
+
+under_200 <- seperate %>%
+  filter(PredictedPrice < 200000)
+
+over_200 <- seperate %>%
+  filter(PredictedPrice >= 200000)
+
+ggplot(under_200, aes(SalePrice, PredictedPrice)) +
+  geom_point(alpha = 0.6) +
+  geom_abline(color = "red", linetype = "dashed") +
+  labs(
+    title = "Actual vs Predicted Sale Price (Sale Price < 200,000)",
+    y = "Predicted (10^3)",
+    x = "Actual SalePrice (10^3)"
+  ) +
+  theme_minimal()
+
+ggplot(over_200, aes(SalePrice, PredictedPrice)) +
+  geom_point(alpha = 0.6) +
+  geom_abline(color = "red", linetype = "dashed") +
+  labs(
+    title = "Actual vs Predicted Sale Price (Sale Price > 200,000)",
+    y = "Predicted (10^3)",
+    x = "Actual SalePrice (10^3)"
+  ) +
+  theme_minimal()
+
+
+# Residuals for < 200
+
+library(ggplot2)
+
+ggplot(under_200, aes(PredictedPrice, Residuals)) +
+  geom_point(alpha = 0.5) +
+  geom_hline(yintercept = 0, color = "red") +
+  labs(
+    title = "Residuals plot for House Prices < 200,000",
+    x = "Predicted Price",
+    y = "Residuals"
+  ) +
+  theme_minimal()
+
+# and predicted price > 200000
+
+ggplot(over_200, aes(PredictedPrice, Residuals)) +
+  geom_point(alpha = 0.5) +
+  geom_hline(yintercept = 0, color = "red") +
+  labs(
+    title = "Residuals plot for House Prices > 200,000",
+    x = "Predicted Price",
+    y = "Residuals"
+  ) +
+  theme_minimal()
+
+
+
+```
+
+
