@@ -179,7 +179,6 @@ Make sure to hide your code with  `echo = FALSE` unless the point you are trying
 
 
 
-# DATA ANALYSIS
 
 # INITIAL FINDINGS (including graphs)
 
