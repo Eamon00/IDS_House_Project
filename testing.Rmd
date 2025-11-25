@@ -118,6 +118,13 @@ predictor_sets <- combn(all_predictors, 12, simplify = FALSE)
 results <- list()
 plot_list <- list()
 
+house_prices_filtered <- house_prices %>% 
+  mutate(TotalBath = BsmtFullBath + 
+           BsmtHalfBath + 
+           HalfBath + 
+           FullBath)
+
+
 for (i in seq_along(predictor_sets)) {
   
   preds <- predictor_sets[[i]]
