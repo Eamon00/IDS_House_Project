@@ -86,8 +86,8 @@ theme_house <- theme_minimal(base_size = 13) +
     plot.background = element_rect(fill = "white", colour = NA)
   )
 
-main_colour <- "#3B82F6"   # A consistent modern blue
-accent_colour <- "#1E40AF" # Darker shade for borders/text
+main_colour <- "#3B82F6"   # Modern blue
+accent_colour <- "#1E40AF" # Darker blue for accents
 ```
 
 
@@ -141,18 +141,34 @@ ggplot(Price_corr_filtered,
   ) +
   theme_house
 ```
-
-
-
-
-
-
-
-
-
-
-
 ## Findings
+
+Using the previously mentioned correlation heat-map, we condensed our number of variables to look at down to 17, by only selecting variables with a correlation of 0.15. We then decided to run the model on every variation of 12 variables, selecting the one that had the highest R^2 score. This allowed us to systematically reduce the number of variables down further, to only the variables with the highest prediciting power. We used a linear regression model, as its ouput is far more suitable for the data type than a logistic regression model, which is better for binary outputs.
+
+```{r}
+library(ggplot2)
+library(readr)
+
+# Load the data
+df <- read_csv("data/train.csv")
+
+# Plot SalePrice vs OverallCond with trend line
+ggplot(df, aes(x = OverallCond, y = SalePrice)) +
+  geom_jitter(alpha = 0.5, width = 0.2) +   # jitter to avoid overlapping points
+  geom_smooth(method = "lm", se = TRUE, color = "blue") + 
+  labs(
+    title = "Sale Price vs Overall Condition",
+    x = "Overall Condition (1 = Poor, 10 = Excellent)",
+    y = "Sale Price"
+  ) +
+  theme_house
+
+
+
+```
+
+
+
 
 The write-up of your project and findings go here. 
 
@@ -179,7 +195,6 @@ Make sure to hide your code with  `echo = FALSE` unless the point you are trying
 
 
 
-# DATA ANALYSIS
 
 # INITIAL FINDINGS (including graphs)
 
