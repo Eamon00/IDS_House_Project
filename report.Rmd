@@ -86,48 +86,57 @@ theme_house <- theme_minimal(base_size = 13) +
     plot.background = element_rect(fill = "white", colour = NA)
   )
 
-main_colour <- "#3B82F6"   # A consistent modern blue
-accent_colour <- "#1E40AF" # Darker shade for borders/text
+main_colour <- "#3B82F6"   
+accent_colour <- "#1E40AF" 
 ```
 
 
-## Introduction
+# Introduction
 
-We set out to investigate how accurately house prices can be predicted using a range of explanatory variables from the Ames Housing dataset. Compiled by Dean De Cock, this dataset provides detailed information on residential properties sold in Ames, Iowa between 2006 and 2010. Our goal was to explore which features—such as structural characteristics, location factors, and indicators of property condition—carry the most predictive power, and to evaluate how effectively different modelling approaches can estimate a home’s final sale price. By analysing these variables and building predictive models, we aimed to determine not only the achievable accuracy of house price predictions, but also which aspects of a home contribute most strongly to its market value.
+Our objective is to accurately predict house sale prices using a comprehensive set of explanatory variables from the Ames Housing dataset. Compiled by Dean De Cock, this dataset provides detailed information on residential properties sold in Ames, Iowa, between 2006 and 2010. The dataset is divided into training and testing sets, each containing the sale price for each property along with numerous features such as neighborhood, number of bathrooms and overall quality which can all be used to predict the properties sale price.
 
-citation - 
-See http://libraryguides.vu.edu.au/c.php?g=386501&p=4347840 for guidance on proper citation for datasets. 
-If you got your data off the web, make sure to state the retrieval date.
+The goal of our investigation is to produce a model which can successfully predict the sale price of properties in the testing data set. We also aim to identify the variables which have the greatest predictive power for sale price.
+
+Kaggle.com. (2016). House Prices: Advanced Regression Techniques | Kaggle. [online] Retrieved November 1, 2025, from https://www.kaggle.com/c/house-prices-advanced-regression-techniques.
 
 
-## Methods
+# Methods
 
-# Data Cleaning and Preprocessing
+## Data Cleaning and Preprocessing
 
-Our first step in data cleaning was to create a more useful representation of bathroom-related variables. Instead of working with separate fields—BsmtHalfBath, BsmtFullBath, HalfBath, and FullBath—we combined them into a single variable, TotalBath, representing the total number of bathrooms in each house. This made comparisons across properties more intuitive and improved the convenience of downstream analysis.
+Before building our predictive model, we first performed data cleaning and preprocessing to ensure the dataset was suitable for analysis.
+
+Our first step was to create a more useful representation of bathroom-related variables. Rather than treating — BsmtHalfBath, BsmtFullBath, HalfBath, and FullBath — as seperate variables; we combined them into a single variable, TotalBath, representing the total number of bathrooms in each house. This made comparisons across properties simpler as the dataset was more intuitive and simpler to model.
 
 We also transformed the KitchenQual variable from categorical descriptions of quality into a numerical rating scale from 1 to 5, where 5 represents the highest quality and 1 the lowest. This conversion made the variable easier to interpret and more convenient to use in modelling functions. We applied the same approach to ExterQual, using the same qual_map transformation because both variables used identical categorical descriptors.
 
 In addition, all NA values in the PoolArea variable were converted to 0. Rather than implying missing data, NA in this context simply indicates that the house does not have a pool. Treating these as zeros prevented the presence of missing values from complicating numeric functions or producing unexpected results during analysis.
 
-# Data Analysis
+We did not remove any outliers in terms of house price, under the assumption that the selected explanatory variables would be able to account for the full range of property values.
 
-To familiarise ourselves with the dataset, we began by producing several exploratory graphs. For example, we plotted the distribution of sale prices to ensure there was sufficient variation to support meaningful prediction.
+## Data Analysis
 
+To familiarize ourselves with the dataset, we began by producing several exploratory graphs. For example, we plotted the distribution of sale prices to ensure there was sufficient variation to support meaningful prediction. 
+
+We observed a roughly bell shaped distribution centred around $180,000. Although there was sufficient variation in house prices to allow for meaningful prediction, the high value of right skew could cause issues when modeling higher house prices due to the limited number of data points.
+
+## Figure 1.1 - Distribution of house prices
 ```{r, echo=FALSE}
-ggplot(house_prices_filtered, aes(x = SalePrice)) +
+ggplot(house_prices_filtered, aes(x = SalePrice/1000)) +
   geom_histogram(
     bins = 30,
     fill = main_colour,
     color = accent_colour
   ) +
-  labs(title = "Distribution of House Prices",
-       x = "Sale Price",
+  labs(title = NULL,
+       x = "Sale Price (Thousands of $)",
        y = "Count") +
   theme_house
 ```
 
-Because the original dataset contained over 80 variables, we then aimed to reduce dimensionality and avoid unnecessary noise. Initially, we selected variables based on intuition and visual inspection—choosing features we believed would be strongly correlated with sale price. However, we quickly realised that a more systematic approach would be more efficient. We generated a correlation heatmap for all numerical variables and identified the 17 features with the highest correlations to the target variable. These variables formed the basis for our subsequent modelling work.
+The original dataset contained over 80 variables which introduced unnecessary noise and risked over fitting. Therefore, we chose to reduce the number of variables down to 17. Initially, we selected variables based on intuition and visual inspection—choosing features we believed would be strongly correlated with sale price. However, we quickly realised that a more systematic approach would be more efficient. We generated a correlation heatmap for all numerical variables and identified the 17 features with the highest correlations to the target variable. These variables formed the basis for our subsequent modelling work.
+
+## Figure 1.2 - Variables correlation with Sale Price
 
 ```{r, echo=FALSE}
 ggplot(Price_corr_filtered,
@@ -135,24 +144,42 @@ ggplot(Price_corr_filtered,
   geom_col(fill = main_colour, color = accent_colour) +
   coord_flip() +
   labs(
-    title = "Variables Positively Correlated with Price",
+    title = NULL,
     x = "Variable",
     y = "Correlation"
+  ) + theme_house +
+  theme(
+  axis.text.y = element_text(size = 6),
+  plot.title = element_blank()
+)
+```
+
+
+Using this heat map, we condensed our number of variables down to 17, by selecting a variety of unique variables which showed strong correlation with sale price. We then decided to run the model on every variation of 12 variables, selecting the one that had the highest R squared score. This allowed us to systematically reduce the number of variables down further, to only the variables with the highest prediciting power. We used a linear regression model, as its ouput is far more suitable for the data type than a logistic regression model, which is better for binary outputs.
+
+```{r}
+library(ggplot2)
+library(readr)
+
+# Load the data
+df <- read_csv("data/train.csv")
+
+ggplot(df, aes(x = OverallCond, y = SalePrice / 1000)) +
+  geom_jitter(alpha = 0.5, width = 0.2) +
+  geom_smooth(method = "lm", se = TRUE, color = "blue") + 
+  labs(
+    title = "Sale Price vs Overall Condition",
+    x = "Overall Condition (1 = Poor, 10 = Excellent)",
+    y = "Sale Price (Thousands of $)"
   ) +
   theme_house
+
+
+
 ```
 
 
 
-
-
-
-
-
-
-
-
-## Findings
 
 The write-up of your project and findings go here. 
 
@@ -179,7 +206,6 @@ Make sure to hide your code with  `echo = FALSE` unless the point you are trying
 
 
 
-# DATA ANALYSIS
 
 # INITIAL FINDINGS (including graphs)
 
