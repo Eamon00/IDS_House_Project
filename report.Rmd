@@ -200,6 +200,59 @@ ggplot(df, aes(x = OverallCond, y = SalePrice / 1000)) +
 
 ```
 
+# INITIAL FINDINGS (including graphs)
+
+# scatter plot of Sale Price vs Total Bath with a fitted regression line.
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(scales)
+
+df <- read.csv("C:/Users/innes/OneDrive/Desktop/IDS_House_Project/data/train.csv")
+
+df <- df %>% filter(!is.na(SalePrice))
+
+if(!"TotalBath" %in% colnames(df)) {
+  df <- df %>% mutate(TotalBath = FullBath + HalfBath * 0.5)
+}
+
+ggplot(df, aes(x = TotalBath, y = SalePrice)) +
+  geom_point(color = "darkgreen", alpha = 0.6) +
+  geom_smooth(method = "lm", color = "red", se = FALSE) +
+  scale_y_continuous(labels = scales::comma) +
+  labs(title = "Sale Price vs Total Bathrooms",
+       x = "Total Bathrooms",
+       y = "Sale Price") +
+  theme_minimal()
+```
+
+# scatter plot of Sale Price vs Overall Quality with a fitted regression line.
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(dplyr)
+library(scales)
+
+
+grp_qual <- df %>%
+  group_by(OverallQual) %>%
+  summarise(avg_price = mean(SalePrice, na.rm = TRUE)) %>%
+  arrange(OverallQual)
+
+
+ggplot(df, aes(x = OverallQual, y = SalePrice)) +
+  geom_point(alpha = 0.5) +                       # scatter points
+  geom_smooth(method = "lm", color = "red") +     # linear regression line
+  scale_y_continuous(labels = scales::comma) +
+  labs(x = "Overall Quality (1–10)", y = "Sale Price ($)", title = "Sale Price vs Overall Quality") +
+  theme_minimal()
+
+
+
+```
+
+
+
+
+
 # MODEL + MODELLING METHODS
 
 With 15 potentially useful variables identified, we needed to determine the optimal subset for prediction. Including all of the 15 variables risked overfitting, while using too few may miss important predictive variables. We chose to use linear regression as our modelling method for a multitude of reasons. Linear regression gives us easily interpretable coefficients, meaning we could not only predict sale price, but also see which variables were most important in the predictions. We also though the assumptions of linear regression, such as linearity and independance^[James, G., Witten, D., Hastie, T., & Tibshirani, R. (2013). *An Introduction to Statistical Learning*. Springer.]
@@ -215,7 +268,7 @@ From our residual plots (1.6 and 1.7), we can see that our model struggles with 
 
 
 
-## Figure 1.5, 1.6 and 1.7 - Plots produced by our model:
+## Figure 1.7, 1.8 and 1.9 - Plots produced by our model:
 
 ```{r, echo=FALSE, message=FALSE, results='hide'}
 
