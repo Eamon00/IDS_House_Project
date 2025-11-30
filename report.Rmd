@@ -98,7 +98,11 @@ Our objective is to accurately predict house sale prices using a comprehensive s
 
 The goal of our investigation is to produce a model which can successfully predict the sale price of properties in the testing data set. We also aim to identify the variables which have the greatest predictive power for sale price.
 
-Kaggle.com. (2016). House Prices: Advanced Regression Techniques | Kaggle. [online] Retrieved November 1, 2025, from https://www.kaggle.com/c/house-prices-advanced-regression-techniques.
+The dataset is published on Kaggle.^[Kaggle.com. (2016). Retrieved from https://www.kaggle.com/c/house-prices-advanced-regression-techniques]
+
+The dataset is commonly used as a benchmark dataset for regression modelling ^[De Cock, D. (2011). Ames, Iowa: Alternative to the Boston Housing Data. *Journal of Statistics Education*, 19(3). Retrieved November 1, 2025, from https://jse.amstat.org/v19n3/.]
+
+
 
 
 # Methods
@@ -110,6 +114,8 @@ Before building our predictive model, we first performed data cleaning and prepr
 Our first step was to create a more useful representation of bathroom-related variables. Rather than treating — BsmtHalfBath, BsmtFullBath, HalfBath, and FullBath — as seperate variables; we combined them into a single variable, TotalBath, representing the total number of bathrooms in each house. This made comparisons across properties simpler as the dataset was more intuitive and simpler to model.
 
 We also transformed the KitchenQual variable from categorical descriptions of quality into a numerical rating scale from 1 to 5, where 5 represents the highest quality and 1 the lowest. This conversion made the variable easier to interpret and more convenient to use in modelling functions. We applied the same approach to ExterQual, using the same qual_map transformation because both variables used identical categorical descriptors.
+
+We applied ordinal numerical encoding to all of the quality-related variables. These variables describe quality using a set of ranked categories—such as Poor, Fair, Typical, Good, and Excellent which form an ordered scale. Since these categories represent increasing levels of quality, treating them as simple nominal labels would discard meaningful information about their ordering. By converting them to a 1–5 numerical scale, we preserve this hierarchy and allow the regression model to make use of the fact that, for exmaple, “Excellent” should indicate higher expected value than “Fair” or “Typical.” Ordinal encoding is therefore the most appropriate representation for quality-based variables of this type.
 
 In addition, all NA values in the PoolArea variable were converted to 0. Rather than implying missing data, NA in this context simply indicates that the house does not have a pool. Treating these as zeros prevented the presence of missing values from complicating numeric functions or producing unexpected results during analysis.
 
@@ -196,9 +202,10 @@ ggplot(df, aes(x = OverallCond, y = SalePrice / 1000)) +
 
 # MODEL + MODELLING METHODS
 
-With 15 potentially useful variables identified, we needed to determine the optimal subset for prediction. Including all of the 15 variables risked overfitting, while using too few may miss important predictive variables. We chose to use linear regression as our modelling method for a multitude of reasons. Linear regression gives us easily interpretable coefficients, meaning we could not only predict sale price, but also see which variables were most important in the predictions. We also though the assumptions of linear regression, such as linearity and independance, seemed reasonable for our dataset based on our explanatory plots. We did consider using a random forest model, however we valued the interpretability of the linear regression model higher.
+With 15 potentially useful variables identified, we needed to determine the optimal subset for prediction. Including all of the 15 variables risked overfitting, while using too few may miss important predictive variables. We chose to use linear regression as our modelling method for a multitude of reasons. Linear regression gives us easily interpretable coefficients, meaning we could not only predict sale price, but also see which variables were most important in the predictions. We also though the assumptions of linear regression, such as linearity and independance^[James, G., Witten, D., Hastie, T., & Tibshirani, R. (2013). *An Introduction to Statistical Learning*. Springer.]
+, seemed reasonable for our dataset based on our explanatory plots. We did consider using a random forest model, however we valued the interpretability of the linear regression model higher.
 
-To systematically reduce our variable set, we decided to use a brute force, exhaustive method, of trying every single combination of 12 variables on our model, and recording the R^2 value of it. R^2 was chosen as it rewards models that explain variance efficiently.
+To systematically reduce our variable set, we decided to use a brute force, exhaustive method, of trying every single combination of 12 variables on our model, and recording the R^2 value of it. R^2 was chosen as it rewards models that explain variance efficiently. 
 
 We tested 455 models (15 choose 12,) to come up with the 12 best variables we could find. They were: GarageCars, BedroomAbvGr, TotalBath, BldgType, LotArea, Neighborhood, KitchenQual, TotalBsmtSF, OverallQual, ExterQual, YearBuilt, GrLivArea. Comparing this to the correlation heatmap, we can see these are not just the 12 variables with the highest correlation, meaning that they would have produced worse results. When running this combination of variables with an 80:20 train:test split, we produced a model with an R^2 of 0.8513 and an MAE of $22073.69. 
 
