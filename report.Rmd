@@ -78,6 +78,7 @@ price_corr_df <- data.frame(
 Price_corr_filtered <- price_corr_df %>%
   filter(correlation > 0.15) 
 
+
 theme_house <- theme_minimal(base_size = 13) +
   theme(
     plot.title = element_text(face = "bold", size = 15),
@@ -134,7 +135,7 @@ ggplot(house_prices_filtered, aes(x = SalePrice/1000)) +
   theme_house
 ```
 
-The original dataset contained over 80 variables which introduced unnecessary noise and risked over fitting. Therefore, we chose to reduce the number of variables down to 17. Initially, we selected variables based on intuition and visual inspection—choosing features we believed would be strongly correlated with sale price. However, we quickly realised that a more systematic approach would be more efficient. We generated a correlation heatmap for all numerical variables and identified the 17 features with the highest correlations to the target variable. These variables formed the basis for our subsequent modelling work.
+The original dataset contained over 80 variables which introduced unnecessary noise and risked over fitting. Therefore, we chose to reduce the number of variables down to 15. Initially, we selected variables based on intuition and visual inspection—choosing features we believed would be strongly correlated with sale price. However, we quickly realised that a more systematic approach would be more efficient. We generated a correlation heatmap for all numerical variables and identified the 15 features with the highest correlations to the target variable. These variables formed the basis for our subsequent modelling work.
 
 ## Figure 1.2 - Variables correlation with Sale Price
 
@@ -155,14 +156,31 @@ ggplot(Price_corr_filtered,
 ```
 
 
-Using this heat map, we condensed our number of variables down to 17, by selecting a variety of unique variables which showed strong correlation with sale price. We then decided to run the model on every variation of 12 variables, selecting the one that had the highest R squared score. This allowed us to systematically reduce the number of variables down further, to only the variables with the highest prediciting power. We used a linear regression model, as its ouput is far more suitable for the data type than a logistic regression model, which is better for binary outputs.
+Using this heat map, we condensed our number of variables down to 15, by selecting a variety of unique variables which showed strong correlation with sale price.
 
-```{r}
+We initally attempted to condense our variables down through intuition, by selecting variables we assumed would have high correlation with sale price. This did work okay, however we did some analysis on our variables, and found some surprising results. We were surprised to find that although Overall Quality had a positive correlation with Sale price (seen in figure 1.3), Overall Condition had a negative correlation with Sale price (seen in figure 1.4).
+
+
+
+## Figure 1.3 and 1.4 - Variables correlation with Sale Price
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(ggplot2)
 library(readr)
 
 # Load the data
-df <- read_csv("data/train.csv")
+df <- read_csv("data/train.csv", show_col_types = FALSE)
+
+ggplot(df, aes(x = OverallQual, y = SalePrice / 1000)) +
+  geom_jitter(alpha = 0.5, width = 0.2) +
+  geom_smooth(method = "lm", se = TRUE, color = "blue") + 
+  labs(
+    title = "Sale Price vs Overall Quality",
+    x = "Overall Quality (1 = Poor, 10 = Excellent)",
+    y = "Sale Price (Thousands of $)"
+  ) +
+  theme_house
 
 ggplot(df, aes(x = OverallCond, y = SalePrice / 1000)) +
   geom_jitter(alpha = 0.5, width = 0.2) +
@@ -174,42 +192,103 @@ ggplot(df, aes(x = OverallCond, y = SalePrice / 1000)) +
   ) +
   theme_house
 
+```
 
+# MODEL + MODELLING METHODS
+
+With 15 potentially useful variables identified, we needed to determine the optimal subset for prediction. Including all of the 15 variables risked overfitting, while using too few may miss important predictive variables. We chose to use linear regression as our modelling method for a multitude of reasons. Linear regression gives us easily interpretable coefficients, meaning we could not only predict sale price, but also see which variables were most important in the predictions. We also though the assumptions of linear regression, such as linearity and independance, seemed reasonable for our dataset based on our explanatory plots. We did consider using a random forest model, however we valued the interpretability of the linear regression model higher.
+
+To systematically reduce our variable set, we decided to use a brute force, exhaustive method, of trying every single combination of 12 variables on our model, and recording the R^2 value of it. R^2 was chosen as it rewards models that explain variance efficiently.
+
+We tested 455 models (15 choose 12,) to come up with the 12 best variables we could find. They were: GarageCars, BedroomAbvGr, TotalBath, BldgType, LotArea, Neighborhood, KitchenQual, TotalBsmtSF, OverallQual, ExterQual, YearBuilt, GrLivArea. Comparing this to the correlation heatmap, we can see these are not just the 12 variables with the highest correlation, meaning that they would have produced worse results. When running this combination of variables with an 80:20 train:test split, we produced a model with an R^2 of 0.8513 and an MAE of $22073.69. 
+
+Figure 1.5 shows that our model is quite accurate, with our predictions largely following the trend line. It can be seen that at higher sale prices our model does struggle, with the predictions looking much less accurate.
+
+From our residual plots (1.6 and 1.7), we can see that our model struggles with predicting higher Sale Price houses especially at the $400,000 plus mark. This is likely due to there being very few houses at this price range, however it could also be explained by other factors. Higher end properties often possess unique characteristics that are difficult to capture with standard numerical variables, such as prestigous locations wthin neighbourhoods and premium finishes.The smaller sample size at this price point means our model has insufficient data to learn these complex patterns, resulting in larger prediction errors. Furthermore, the relationship between predictors and price may become non-linear at the extremes; for instance, an additional 500 square feet will likely add less value to an already large luxury home than it would to a mid-sized property. This suggests that future modeling efforts could benefit from either collecting more high-end property data or using separate models for different price segments of the housing market.
+
+
+
+## Figure 1.5, 1.6 and 1.7 - Plots produced by our model:
+
+```{r, echo=FALSE, message=FALSE, results='hide'}
+
+library(dplyr)
+library(ggplot2)
+
+best_model_vars <- house_prices_filtered %>%
+  select(GarageCars, BedroomAbvGr, TotalBath, BldgType, LotArea,
+         Neighborhood, KitchenQual, TotalBsmtSF, OverallQual,
+         ExterQual, YearBuilt, GrLivArea, SalePrice, Id)
+
+set.seed(22)
+
+n <- nrow(best_model_vars)
+train_idx <- sample(seq_len(n), size = 0.8 * n)
+
+train_df <- best_model_vars[train_idx, ]
+test_df  <- best_model_vars[-train_idx, ]
+
+predictors <- setdiff(names(best_model_vars), "SalePrice")
+
+form <- as.formula(
+  paste("SalePrice ~", paste(predictors, collapse = " + "))
+)
+
+model_80_20 <- lm(form, data = train_df)
+test_predictions <- predict(model_80_20, newdata = test_df)
+
+rmse <- sqrt(mean((test_df$SalePrice - test_predictions)^2))
+mae  <- mean(abs(test_df$SalePrice - test_predictions))
+r2_test <- 1 - sum((test_df$SalePrice - test_predictions)^2) /
+               sum((test_df$SalePrice - mean(test_df$SalePrice))^2)
+
+cat("Test RMSE:", round(rmse, 2), "\n")
+cat("Test MAE:", round(mae, 2), "\n")
+cat("Test R²:", round(r2_test, 4), "\n")
+
+ggplot(
+  data.frame(Actual = test_df$SalePrice, Predicted = test_predictions),
+  aes(x = Actual, y = Predicted)
+) +
+  geom_point(alpha = 0.6, color = main_colour) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = accent_colour) +
+  theme_house +
+  labs(
+    title = "Predicted vs Actual SalePrice (Test Set)",
+    x = "Actual SalePrice",
+    y = "Predicted SalePrice"
+  )
+
+
+
+residuals_df <- data.frame(
+  Fitted = test_predictions,
+  Residuals = test_df$SalePrice - test_predictions
+)
+
+
+ggplot(residuals_df, aes(x = Fitted, y = Residuals)) +
+  geom_point(alpha = 0.6, color = main_colour) +
+  geom_hline(yintercept = 0, color = accent_colour, linetype = "dashed") +
+  theme_house +
+  labs(
+    title = "Residual Plot (Test Set)",
+    x = "Fitted Values (Predicted SalePrice)",
+    y = "Residuals (Actual - Predicted)"
+  )
+
+
+ggplot(residuals_df, aes(x = Residuals)) +
+  geom_histogram(binwidth = 5000, fill = main_colour, color = accent_colour, alpha = 0.7) +
+  theme_house +
+  labs(
+    title = "Histogram of Residuals (Test Set)",
+    x = "Residuals (Actual - Predicted)",
+    y = "Count"
+  )
 
 ```
 
-
-
-
-The write-up of your project and findings go here. 
-
-Think of this as the text of your presentation with some extra detail to cover what there was not time to discuss in the presentation. This might include any assumptions you made when doing your analysis, any limitations of the work you have done or any ideas you have for future work. Feel free to split this section into subsections to make it easier to read. 
-
-The length should be roughly 1,500 words. 
-If you want to use a word count addin, you can install this by copying and pasting the following into RStudio:
-
-`devtools::install_github("benmarwick/wordcountaddin", type = "source", dependencies = TRUE)`
-
-You will then need to restart RStudio. Once you have done that, select the text you want to count the words of, go to Addins, and select the `Word count` addin.
-This addin counts words using two different algorithms, but the results should be similar and as long as you're in the ballpark of 1,500 words, you're good! 
-The addin will ignore code chunks and only count the words in prose. If you don't want to use the addin you can always copy and paste the text into Microsoft Word to do a Word Count!
-
-You can also load your data here and present any analysis results / plots.
-Make sure to hide your code with  `echo = FALSE` unless the point you are trying to make is about the code itself, in which case you should show your code.
-
-
-
-
-
-
-
-
-
-
-
-# INITIAL FINDINGS (including graphs)
-
-# MODEL + MODELLING METHODS
 
 # FINAL DISCUSSION
 
