@@ -207,7 +207,7 @@ ggplot(df, aes(x = OverallCond, y = SalePrice / 1000)) +
 library(tidyverse)
 library(scales)
 
-df <- read.csv("C:/Users/innes/OneDrive/Desktop/IDS_House_Project/data/train.csv")
+df <- read.csv("data/train.csv")
 
 df <- df %>% filter(!is.na(SalePrice))
 
